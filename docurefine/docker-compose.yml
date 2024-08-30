@@ -1,0 +1,31 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=production
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    command: celery -A config.celery_config worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"
+
+  flower:
+    build: .
+    command: celery -A config.celery_config flower
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis

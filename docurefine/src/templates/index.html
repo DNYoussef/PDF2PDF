@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF2PDF - DocuRefine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+  <header>
+    <h1 class="logo">PDF2PDF</h1>
+  </header>
+  <main>
+    <div id="drop-area">
+      <p>Drag and drop files here or click to select</p>
+      <input type="file" id="fileElem" multiple accept=".pdf,.png,.jpg,.jpeg,.docx,.html" style="display:none">
+    </div>
+    <button id="start-button" disabled>Start Processing</button>
+    <div id="progress-bar-container" style="display:none;">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="file-list"></div>
+  </main>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

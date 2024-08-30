@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Files - DocuRefine</title>
+</head>
+
+<body>
+  <h1>My Files</h1>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endwith %}
+  <ul>
+    {% for file in files %}
+    <li>
+      {{ file }}
+      <a href="{{ url_for('download', task_id=file) }}">Download</a>
+      <a href="{{ url_for('delete_file', filename=file) }}">Delete</a>
+    </li>
+    {% endfor %}
+  </ul>
+  <a href="{{ url_for('index') }}">Back to Upload</a>
+  <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+
+</html>

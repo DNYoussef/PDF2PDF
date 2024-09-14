@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from celery_tasks import process_document, process_multiple_documents
+from celery_tasks import process_document, process_multiple_documents, process_file
 from werkzeug.utils import secure_filename
 from user_management import db, User
 import os
@@ -13,17 +13,13 @@ from logging.handlers import RotatingFileHandler
 import bleach
 from prometheus_client import Counter, Histogram
 from prometheus_flask_exporter import PrometheusMetrics
+from config.config import config
 
 request_count = Counter('http_requests_total', 'Total HTTP Requests')
 request_latency = Histogram('http_request_duration_seconds', 'HTTP Request Duration')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'  # Change this to a random secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['OUTPUT_FOLDER'] = 'output'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-
+app.config.from_object(config)
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -178,6 +174,48 @@ def download(task_id):
             return jsonify({'error': 'Output file not found'}), 404
     else:
         return jsonify({'error': 'Task not completed'}), 400
+
+@app.route('/api/upload', methods=['POST'])
+@login_required
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        user_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
+        os.makedirs(user_folder, exist_ok=True)
+        file_path = os.path.join(user_folder, filename)
+        file.save(file_path)
+        # Trigger Celery task for processing
+        task = process_file.delay(file_path)
+        return jsonify({'message': 'File uploaded successfully', 'task_id': task.id}), 200
+    return jsonify({'error': 'File type not allowed'}), 400
+
+@app.route('/api/task/<task_id>', methods=['GET'])
+@login_required
+def get_task_status(task_id):
+    task = process_file.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'status': 'Task is pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        response = {
+            'state': task.state,
+            'status': str(task.info)
+        }
+    return jsonify(response)
 
 @app.errorhandler(404)
 def not_found_error(error):

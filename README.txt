@@ -1,40 +1,60 @@
-Project Scope:
-Our project, which we'll call "DocuRefine," aims to transform poorly formatted or scanned documents into searchable, editable PDFs while preserving the original layout. The system will handle both PDFs and image inputs, process them page by page, and output a refined PDF document.
+# DocuRefine
 
-Key features:
+DocuRefine is a powerful document processing tool designed to transform poorly formatted or scanned documents into searchable, editable PDFs while preserving the original layout. The system handles both PDFs and image inputs, processes them page by page, and outputs a refined PDF document.
+
+## Key Features
+
 1. PDF splitting and image processing
-2. OCR for text extraction
+2. OCR (Optical Character Recognition) for text extraction
 3. Layout analysis
 4. Text-to-LaTeX conversion
 5. Image comparison for quality control
 6. PDF reconstruction
+7. User management and authentication
 
-Tech Stack:
-1. Python 3.8+: Our primary programming language due to its rich ecosystem of libraries for AI and document processing.
+## Tech Stack
 
-2. PyPDF2: For PDF manipulation (splitting and merging).
-   Reason: Pure Python library, easy to use and integrate.
+- Python 3.8+
+- PyPDF2 (now updated to PyPDF4 or pypdf)
+- Tesseract (via pytesseract)
+- Layout Parser
+- Hugging Face Transformers
+- scikit-image
+- OpenCV (cv2)
+- Celery
+- Redis
+- Flask
+- SQLAlchemy
+- Prometheus (for monitoring)
 
-3. Tesseract (via pytesseract): For OCR.
-   Reason: Open-source, widely used, and supports multiple languages.
+## Installation
 
-4. Layout Parser: For document layout analysis.
-   Reason: Provides pre-trained models for various document types.
+1. Clone the repository:
+https://github.com/yourusername/docurefine.git cd docurefine
 
-5. Hugging Face Transformers: For text-to-LaTeX conversion.
-   Reason: State-of-the-art NLP models, easy to fine-tune and use.
 
-6. scikit-image: For image comparison (SSIM).
-   Reason: Comprehensive image processing library with the required metrics.
+2. Install dependencies:
+pip install -r requirements.txt
 
-7. OpenCV (cv2): For image preprocessing.
-   Reason: Powerful image processing capabilities, works well with scikit-image.
 
-8. Celery: For task queue and parallel processing.
-   Reason: Allows for efficient processing of multiple pages simultaneously.
+3. Set up environment variables (create a .env file in the project root):
+FLASK_APP=src/app.py FLASK_ENV=development
 
-9. Redis: As a message broker for Celery.
-   Reason: Fast, lightweight, and works well with Celery.
+## Usage
+
+1. Start the Flask application:
+flask run
+
+2. Start Celery worker:
+celery -A config.celery_config worker --loglevel=info
+
+3. Start Flower (Celery monitoring tool):
+celery -A config.celery_config flower
+
+4. (Optional) If using Docker:
+docker-compose up
+
+For detailed API usage, refer to the [API documentation](docs/API.md).
 
 Information Flow:
 
@@ -95,3 +115,30 @@ docurefine/
 ├── setup.py
 └── .gitignore
 ```
+## Testing
+
+Run the tests using:
+python -m unittest discover tests
+
+
+## Configuration
+
+- Application configuration: `config/config.py`
+- Celery configuration: `config/celery_config.py`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+[Include license information]
+
+## Acknowledgments
+
+- [List any libraries, tools, or resources you want to acknowledge]
+T
